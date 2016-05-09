@@ -43,7 +43,7 @@ public class Messenger {
         return name;
     }
 
-    public static MessengerClient getClient(){
+    public static MessengerClient getClient() {
 
         return client;
     }

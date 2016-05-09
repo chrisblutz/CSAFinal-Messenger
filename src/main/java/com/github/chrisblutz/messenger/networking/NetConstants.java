@@ -10,9 +10,10 @@ public class NetConstants {
     public static final String CONNECTION_NAME = "conn-name";
     public static final String CONNECTION_NUMBER_CURRENTLY_CONNECTED = "conn-current";
     public static final String CONNECTION_LIST_CURRENT_USERS = "conn-users";
+    public static final String CONNECTION_SUBJECT = "conn-sbj";
     public static final String CONNECTION_MESSAGE = "conn-msg";
-    public static final String CONNECTION_MESSAGE_ERROR = "conn-msg-error";
-    public static final String CONNECTION_MESSAGE_INFO = "conn-msg-info";
+    public static final String CONNECTION_ERROR = "conn-error";
+    public static final String CONNECTION_INFO = "conn-info";
     public static final String CONNECTION_DISCONNECT_FLAG = "conn-dsc";
     public static final String CONNECTION_DISCONNECT_ACKNOWLEDGEMENT = "conn-dsc-resp";
 }

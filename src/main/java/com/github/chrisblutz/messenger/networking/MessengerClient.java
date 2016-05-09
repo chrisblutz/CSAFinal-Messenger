@@ -1,6 +1,7 @@
 package com.github.chrisblutz.messenger.networking;
 
 import com.github.chrisblutz.listeners.ClientListener;
+import com.github.chrisblutz.messenger.Message;
 import com.github.chrisblutz.messenger.Messenger;
 import com.github.chrisblutz.packets.Packet;
 import com.github.chrisblutz.relay.RelayClient;
@@ -45,7 +46,7 @@ public class MessengerClient {
                         }
                     }
 
-                    Messenger.getUI().printInfo("Connected on '" + ip + "'!  There " + (currentlyConnected != 1 ? "are " : "is ") + currentlyConnected + (currentlyConnected != 1 ? " people" : " person") + " already connected." + (currentlyConnected > 0 ? " (" + userStr + ")" : ""));
+                    Messenger.getUI().printMessage(Message.TYPE_INFO, "", "", "Connected on '" + ip + "'!  There " + (currentlyConnected != 1 ? "are " : "is ") + currentlyConnected + (currentlyConnected != 1 ? " people" : " person") + " already connected." + (currentlyConnected > 0 ? " (" + userStr + ")" : ""));
                 }
 
                 Packet p = new Packet();
@@ -57,38 +58,43 @@ public class MessengerClient {
             @Override
             public void onReceive(Connection connection, Packet packet) {
 
-                String user = "?";
+                String user = "?", subject = "", message = "";
 
                 if (packet.hasData(NetConstants.CONNECTION_NAME)) {
 
                     user = packet.getData(NetConstants.CONNECTION_NAME).toString();
                 }
 
-                // ERRORS
-                if (packet.hasData(NetConstants.CONNECTION_MESSAGE_ERROR)) {
+                if (packet.hasData(NetConstants.CONNECTION_SUBJECT)) {
 
-                    String message = packet.getData(NetConstants.CONNECTION_MESSAGE_ERROR).toString();
-                    Messenger.getUI().printError(message);
+                    subject = packet.getData(NetConstants.CONNECTION_SUBJECT).toString();
                 }
 
-                // INFO
-                if (packet.hasData(NetConstants.CONNECTION_MESSAGE_INFO)) {
-
-                    String message = packet.getData(NetConstants.CONNECTION_MESSAGE_INFO).toString();
-                    Messenger.getUI().printInfo(message);
-                }
-
-                // MESSAGE
                 if (packet.hasData(NetConstants.CONNECTION_MESSAGE)) {
 
-                    String message = packet.getData(NetConstants.CONNECTION_MESSAGE).toString();
-                    Messenger.getUI().printIncoming(user, message);
+                    message = packet.getData(NetConstants.CONNECTION_MESSAGE).toString();
+                }
+
+                System.out.println(user+", "+subject+", "+message);
+
+                // ERRORS
+                if (packet.hasData(NetConstants.CONNECTION_ERROR)) {
+
+                    Messenger.getUI().printMessage(Message.TYPE_ERROR, user, subject, message);
+
+                } else if (packet.hasData(NetConstants.CONNECTION_INFO)) {
+
+                    Messenger.getUI().printMessage(Message.TYPE_INFO, user, subject, message);
+
+                } else {
+
+                    Messenger.getUI().printMessage(Message.TYPE_INCOMING, user, subject, message);
                 }
 
                 // DISCONNECT FLAG
                 if (packet.hasData(NetConstants.CONNECTION_DISCONNECT_FLAG)) {
 
-                    Messenger.getUI().printInfo("User '" + user + "' disconnected!");
+                    Messenger.getUI().printMessage(Message.TYPE_INFO, user, "Disconnect", "User '" + user + "' disconnected!");
                 }
 
                 if (packet.hasData(NetConstants.CONNECTION_DISCONNECT_ACKNOWLEDGEMENT)) {
@@ -100,35 +106,42 @@ public class MessengerClient {
             @Override
             public void onTimeout(Connection connection) {
 
-                Messenger.getUI().printError("Connection lost (timed out)!");
+                Messenger.getUI().printMessage(Message.TYPE_ERROR, "", "", "Connection lost (timed out)!");
                 timedOut = true;
             }
         });
     }
 
-    public void sendMessage(String message) {
+    public void sendMessage(String subject, String message) {
 
         Packet p = new Packet();
         p.putData(NetConstants.CONNECTION_NAME, Messenger.getMessengerName());
+        p.putData(NetConstants.CONNECTION_SUBJECT, subject);
         p.putData(NetConstants.CONNECTION_MESSAGE, message);
 
-        client.sendPacket(p, false);
-    }
-
-    public void sendError(String message) {
-
-        Packet p = new Packet();
-        p.putData(NetConstants.CONNECTION_NAME, Messenger.getMessengerName());
-        p.putData(NetConstants.CONNECTION_MESSAGE_ERROR, message);
+        System.out.println(subject+", "+message);
 
         client.sendPacket(p, false);
     }
 
-    public void sendInfo(String message) {
+    public void sendError(String subject, String message) {
 
         Packet p = new Packet();
         p.putData(NetConstants.CONNECTION_NAME, Messenger.getMessengerName());
-        p.putData(NetConstants.CONNECTION_MESSAGE_INFO, message);
+        p.putData(NetConstants.CONNECTION_SUBJECT, subject);
+        p.putData(NetConstants.CONNECTION_MESSAGE, message);
+        p.putData(NetConstants.CONNECTION_ERROR, true);
+
+        client.sendPacket(p, false);
+    }
+
+    public void sendInfo(String subject, String message) {
+
+        Packet p = new Packet();
+        p.putData(NetConstants.CONNECTION_NAME, Messenger.getMessengerName());
+        p.putData(NetConstants.CONNECTION_SUBJECT, subject);
+        p.putData(NetConstants.CONNECTION_MESSAGE, message);
+        p.putData(NetConstants.CONNECTION_INFO, true);
 
         client.sendPacket(p, false);
     }
@@ -162,5 +175,17 @@ public class MessengerClient {
     public void close() throws IOException {
 
         client.close();
+    }
+
+    public boolean isOpenAndConnected() {
+
+        if (client != null && client.getConnection() != null) {
+
+            return !client.getConnection().isClosed() && client.getConnection().isConnected();
+
+        } else {
+
+            return false;
+        }
     }
 }

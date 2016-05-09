@@ -65,7 +65,8 @@ public class MessengerServer {
                     if (group.size() > 0) {
 
                         Packet p = new Packet();
-                        p.putData(NetConstants.CONNECTION_MESSAGE_ERROR, "Connection to user '" + users.get(c) + "' lost!");
+                        p.putData(NetConstants.CONNECTION_MESSAGE, "Connection to user '" + users.get(c) + "' lost!");
+                        p.putData(NetConstants.CONNECTION_ERROR, true);
 
                         group.sendPacket(c, p);
                     }
@@ -112,33 +113,36 @@ public class MessengerServer {
 
                     if (group != null) {
 
-                        toBeSent.putData(NetConstants.CONNECTION_MESSAGE_INFO, "User '" + name + "' connected!");
+                        toBeSent.putData(NetConstants.CONNECTION_MESSAGE, "User '" + name + "' connected!");
+                        toBeSent.putData(NetConstants.CONNECTION_INFO, true);
                     }
                 }
 
                 if (group != null) {
 
                     String user = users.containsKey(c) ? users.get(c) : "?";
+                    String subject = "", message = "";
 
-                    // ERRORS
-                    if (data.hasData(NetConstants.CONNECTION_MESSAGE_ERROR)) {
-
-                        String message = data.getData(NetConstants.CONNECTION_MESSAGE_ERROR).toString();
-                        toBeSent.putData(NetConstants.CONNECTION_MESSAGE_ERROR, message);
-                    }
-
-                    // INFO
-                    if (data.hasData(NetConstants.CONNECTION_MESSAGE_INFO)) {
-
-                        String message = data.getData(NetConstants.CONNECTION_MESSAGE_INFO).toString();
-                        toBeSent.putData(NetConstants.CONNECTION_MESSAGE_INFO, message);
-                    }
-
-                    // MESSAGES
                     if (data.hasData(NetConstants.CONNECTION_MESSAGE)) {
 
-                        String message = data.getData(NetConstants.CONNECTION_MESSAGE).toString();
+                        message = data.getData(NetConstants.CONNECTION_MESSAGE).toString();
                         toBeSent.putData(NetConstants.CONNECTION_MESSAGE, message);
+
+                        // ERRORS
+                        if (data.hasData(NetConstants.CONNECTION_ERROR)) {
+
+                            toBeSent.putData(NetConstants.CONNECTION_ERROR, true);
+
+                        } else if (data.hasData(NetConstants.CONNECTION_INFO)) {
+
+                            toBeSent.putData(NetConstants.CONNECTION_INFO, true);
+                        }
+                    }
+
+                    if (data.hasData(NetConstants.CONNECTION_SUBJECT)) {
+
+                        subject = data.getData(NetConstants.CONNECTION_SUBJECT).toString();
+                        toBeSent.putData(NetConstants.CONNECTION_SUBJECT, subject);
                     }
 
                     // DISCONNECT FLAG
@@ -176,7 +180,8 @@ public class MessengerServer {
                     if (group.size() > 0) {
 
                         Packet p = new Packet();
-                        p.putData(NetConstants.CONNECTION_MESSAGE_ERROR, "User '" + users.get(c) + "' timed out!");
+                        p.putData(NetConstants.CONNECTION_MESSAGE, "User '" + users.get(c) + "' timed out!");
+                        p.putData(NetConstants.CONNECTION_ERROR, true);
 
                         group.sendPacket(c, p);
                     }

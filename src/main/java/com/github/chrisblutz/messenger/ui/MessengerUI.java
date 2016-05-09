@@ -1,5 +1,8 @@
 package com.github.chrisblutz.messenger.ui;
 
+import com.github.chrisblutz.messenger.Message;
+
+
 /**
  * @author Christopher Lutz
  */
@@ -7,36 +10,37 @@ public class MessengerUI {
 
     private MessengerFrame frame;
 
-    public MessengerUI(){
+    public MessengerUI() {
 
         frame = new MessengerFrame();
 
         frame.setSize(650, 700);
         frame.setVisible(true);
+
+        MessengerSystemTray.show();
     }
 
-    public void printIncoming(String user, String message){
+    public void printMessage(int type, String user, String subject, String message) {
 
-        frame.getOutputPane().printIncoming(user, message);
+        frame.getOutputList().getListModel().addElement(new Message(type, user, subject, message));
+        frame.getOutputList().revalidate();
+        frame.getOutputList().repaint();
+
+        MessengerSystemTray.notify(type, user, type == Message.TYPE_ERROR || type == Message.TYPE_INFO ? message : subject);
     }
 
-    public void printOutgoing(String user, String message){
+    public MessengerList getOutputList() {
 
-        frame.getOutputPane().printOutgoing(user, message);
+        return frame.getOutputList();
     }
 
-    public void printError(String message){
+    public boolean isVisible() {
 
-        frame.getOutputPane().printError(message);
+        return frame.isVisible();
     }
 
-    public void printInfo(String message){
+    public void setVisible(boolean visible) {
 
-        frame.getOutputPane().printInfo(message);
-    }
-
-    public void printHorizontalRule(){
-
-        frame.getOutputPane().printHorizontalRule();
+        frame.setVisible(true);
     }
 }

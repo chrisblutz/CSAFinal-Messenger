@@ -1,6 +1,8 @@
 package com.github.chrisblutz.messenger.ui;
 
+import com.github.chrisblutz.messenger.Message;
 import com.github.chrisblutz.messenger.Messenger;
+import com.github.chrisblutz.messenger.resources.Images;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
 
 
 /**
@@ -21,9 +24,11 @@ public class MessengerFrame extends JFrame {
 
     // Window
     private JScrollPane outputScroll;
-    private MessengerOutputPane outputPane;
-    private JPanel inputPanel;
+    private MessengerList outputList;
+    private JPanel inputPanel, messagePanel;
+    private JLabel subjectL, messageL;
     private JTextField inputField;
+    private JTextPane messageField;
     private JButton inputButton;
 
     public MessengerFrame() {
@@ -40,51 +45,77 @@ public class MessengerFrame extends JFrame {
             e.printStackTrace();
         }
 
+        Image i = Images.loadInternal("icon");
+        if(i == null){
+
+            i = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
+            i.getGraphics().setColor(Color.BLACK);
+            i.getGraphics().fillRect(0, 0, 32, 32);
+        }
+
+        setIconImage(i);
+
         menuBar = new JMenuBar();
         fileMenu = new JMenu("File");
 
         menuBar.add(fileMenu);
 
-        outputPane = new MessengerOutputPane();
+        outputList = new MessengerList();
 
-        outputScroll = new JScrollPane(outputPane);
+        outputScroll = new JScrollPane(outputList);
         outputScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
+        subjectL = new JLabel("  Subject:   ");
         inputField = new JTextField();
         inputButton = new JButton("Send");
+
+        messageL = new JLabel("  Message: ");
+        messageField = new JTextPane();
 
         ActionListener listener = new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                String text = inputField.getText();
+                String subject = inputField.getText();
+                String message = messageField.getText();
 
-                if (!text.trim().isEmpty()) {
+                if (!subject.trim().isEmpty() && !message.trim().isEmpty()) {
 
-                    Messenger.getClient().sendMessage(text);
-                    Messenger.getUI().printOutgoing(Messenger.getMessengerName(), text);
+                    Messenger.getClient().sendMessage(subject, message);
+                    Messenger.getUI().printMessage(Message.TYPE_OUTGOING, Messenger.getMessengerName(), subject, message);
                 }
 
                 inputField.setText("");
+                messageField.setText("");
             }
         };
 
-        inputField.addActionListener(listener);
         inputButton.addActionListener(listener);
 
         inputPanel = new JPanel(new BorderLayout());
+        inputPanel.add(subjectL, BorderLayout.WEST);
         inputPanel.add(inputField, BorderLayout.CENTER);
         inputPanel.add(inputButton, BorderLayout.EAST);
+
+        messagePanel = new JPanel(new BorderLayout());
+        messagePanel.add(messageL, BorderLayout.WEST);
+        messagePanel.add(inputPanel, BorderLayout.NORTH);
+
+        JScrollPane scrollPane = new JScrollPane(messageField);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.setPreferredSize(new Dimension(0, 120));
+
+        messagePanel.add(scrollPane, BorderLayout.CENTER);
 
         setLayout(new BorderLayout());
 
         add(outputScroll, BorderLayout.CENTER);
-        add(inputPanel, BorderLayout.SOUTH);
+        add(messagePanel, BorderLayout.SOUTH);
 
         setJMenuBar(menuBar);
 
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(HIDE_ON_CLOSE);
         addWindowListener(new WindowListener() {
 
             @Override
@@ -95,9 +126,6 @@ public class MessengerFrame extends JFrame {
 
             @Override
             public void windowClosing(WindowEvent e) {
-
-                MessengerFrame.this.setVisible(false);
-                Messenger.getClient().sendDisconnect();
             }
 
             @Override
@@ -127,8 +155,8 @@ public class MessengerFrame extends JFrame {
         });
     }
 
-    public MessengerOutputPane getOutputPane() {
+    public MessengerList getOutputList() {
 
-        return outputPane;
+        return outputList;
     }
 }
