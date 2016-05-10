@@ -5,6 +5,8 @@ import com.github.chrisblutz.messenger.Messenger;
 import com.github.chrisblutz.messenger.resources.Images;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,8 +30,11 @@ public class MessengerFrame extends JFrame {
     private JPanel inputPanel, messagePanel;
     private JLabel subjectL, messageL;
     private JTextField inputField;
-    private JTextPane messageField;
+    private JTextArea messageField;
     private JButton inputButton;
+
+    private boolean subjectIsEmpty = true;
+    private boolean messageIsEmpty = true;
 
     public MessengerFrame() {
 
@@ -46,7 +51,7 @@ public class MessengerFrame extends JFrame {
         }
 
         Image i = Images.loadInternal("icon");
-        if(i == null){
+        if (i == null) {
 
             i = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
             i.getGraphics().setColor(Color.BLACK);
@@ -63,14 +68,152 @@ public class MessengerFrame extends JFrame {
         outputList = new MessengerList();
 
         outputScroll = new JScrollPane(outputList);
-        outputScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         subjectL = new JLabel("  Subject:   ");
         inputField = new JTextField();
+        inputField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+
+                if (inputField.getText().isEmpty()) {
+
+                    subjectIsEmpty = true;
+
+                } else {
+
+                    subjectIsEmpty = false;
+                }
+
+                if (subjectIsEmpty || messageIsEmpty) {
+
+                    inputButton.setEnabled(false);
+
+                } else {
+
+                    inputButton.setEnabled(true);
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+
+                if (inputField.getText().isEmpty()) {
+
+                    subjectIsEmpty = true;
+
+                } else {
+
+                    subjectIsEmpty = false;
+                }
+
+                if (subjectIsEmpty || messageIsEmpty) {
+
+                    inputButton.setEnabled(false);
+
+                } else {
+
+                    inputButton.setEnabled(true);
+                }
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+
+                if (inputField.getText().isEmpty()) {
+
+                    subjectIsEmpty = true;
+
+                } else {
+
+                    subjectIsEmpty = false;
+                }
+
+                if (subjectIsEmpty || messageIsEmpty) {
+
+                    inputButton.setEnabled(false);
+
+                } else {
+
+                    inputButton.setEnabled(true);
+                }
+            }
+        });
         inputButton = new JButton("Send");
+        inputButton.setEnabled(false);
 
         messageL = new JLabel("  Message: ");
-        messageField = new JTextPane();
+        messageField = new JTextArea();
+        messageField.setLineWrap(true);
+        messageField.setWrapStyleWord(false);
+        messageField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+
+                if (messageField.getText().isEmpty()) {
+
+                    messageIsEmpty = true;
+
+                } else {
+
+                    messageIsEmpty = false;
+                }
+
+                if (subjectIsEmpty || messageIsEmpty) {
+
+                    inputButton.setEnabled(false);
+
+                } else {
+
+                    inputButton.setEnabled(true);
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+
+                if (messageField.getText().isEmpty()) {
+
+                    messageIsEmpty = true;
+
+                } else {
+
+                    messageIsEmpty = false;
+                }
+
+                if (subjectIsEmpty || messageIsEmpty) {
+
+                    inputButton.setEnabled(false);
+
+                } else {
+
+                    inputButton.setEnabled(true);
+                }
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+
+                if (messageField.getText().isEmpty()) {
+
+                    messageIsEmpty = true;
+
+                } else {
+
+                    messageIsEmpty = false;
+                }
+
+                if (subjectIsEmpty || messageIsEmpty) {
+
+                    inputButton.setEnabled(false);
+
+                } else {
+
+                    inputButton.setEnabled(true);
+                }
+            }
+        });
 
         ActionListener listener = new ActionListener() {
 
@@ -88,6 +231,7 @@ public class MessengerFrame extends JFrame {
 
                 inputField.setText("");
                 messageField.setText("");
+                inputButton.setEnabled(false);
             }
         };
 
@@ -107,6 +251,7 @@ public class MessengerFrame extends JFrame {
         scrollPane.setPreferredSize(new Dimension(0, 120));
 
         messagePanel.add(scrollPane, BorderLayout.CENTER);
+        messagePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 0));
 
         setLayout(new BorderLayout());
 
@@ -126,6 +271,7 @@ public class MessengerFrame extends JFrame {
 
             @Override
             public void windowClosing(WindowEvent e) {
+
             }
 
             @Override

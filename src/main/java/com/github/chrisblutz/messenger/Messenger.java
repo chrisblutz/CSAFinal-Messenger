@@ -1,6 +1,7 @@
 package com.github.chrisblutz.messenger;
 
 import com.github.chrisblutz.messenger.networking.MessengerClient;
+import com.github.chrisblutz.messenger.ui.IPSelector;
 import com.github.chrisblutz.messenger.ui.MessengerUI;
 
 import java.io.IOException;
@@ -14,22 +15,29 @@ public class Messenger {
     private static MessengerUI ui;
     private static String name;
     private static MessengerClient client;
+    public static boolean connectedFirst = false;
 
     public static void setup(String name) {
 
         Messenger.name = name;
 
+        new IPSelector();
+    }
+
+    public static void continueSetup(String ip) {
+
         ui = new MessengerUI();
 
-        // DEMO
-        client = new MessengerClient("localhost");
+        client = new MessengerClient(ip);
         try {
 
             client.connect();
 
+            connectedFirst = true;
+
         } catch (IOException e) {
 
-            e.printStackTrace();
+            getUI().printMessage(Message.TYPE_ERROR, "", "", "Unable to connect on '" + ip + "'!");
         }
     }
 

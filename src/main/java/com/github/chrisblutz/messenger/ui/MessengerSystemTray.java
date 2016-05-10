@@ -90,7 +90,7 @@ public class MessengerSystemTray {
 
                         MessengerSystemTray.hide();
 
-                        if (Messenger.getClient() != null && Messenger.getClient().isOpenAndConnected()) {
+                        if (Messenger.connectedFirst && Messenger.getClient() != null && Messenger.getClient().isOpenAndConnected()) {
 
                             Messenger.getClient().sendDisconnect();
                         }

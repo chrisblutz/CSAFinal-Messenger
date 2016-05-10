@@ -11,7 +11,7 @@ import java.awt.*;
  */
 public class MessengerListCellRenderer implements ListCellRenderer<Message> {
 
-    public static final Color INFO = new Color(0, 150, 255), ERROR = Color.RED, INCOMING = Color.WHITE, OUTGOING = Color.LIGHT_GRAY;
+    public static final Color INFO = new Color(50, 200, 255), ERROR = new Color(255, 150, 150), INCOMING = new Color(230, 230, 230), OUTGOING = Color.LIGHT_GRAY;
 
     @Override
     public Component getListCellRendererComponent(JList<? extends Message> list, Message value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -52,6 +52,10 @@ public class MessengerListCellRenderer implements ListCellRenderer<Message> {
             user.setOpaque(false);
             Font userFont = user.getFont().deriveFont(Font.BOLD);
             userFont = userFont.deriveFont(userFont.getSize() + 3f);
+            if (value.getType() == Message.TYPE_OUTGOING) {
+                userFont = userFont.deriveFont(Font.BOLD + Font.ITALIC);
+                user.setText(value.getUser() + " (You): ");
+            }
             user.setFont(userFont);
             user.setForeground(new Color(100, 100, 100));
 
@@ -61,8 +65,14 @@ public class MessengerListCellRenderer implements ListCellRenderer<Message> {
             subjectFont = subjectFont.deriveFont(subjectFont.getSize() + 3f);
             subject.setFont(subjectFont);
 
-            JLabel message = new JLabel(value.getMessage());
+            JTextArea message = new JTextArea();
+            message.setText(value.getMessage());
             message.setOpaque(false);
+            //message.setBackground(null);
+            message.setLineWrap(true);
+            message.setWrapStyleWord(false);
+            message.setColumns(30);
+            message.setRows((int) Math.ceil(value.getMessage().length() / 30));
             message.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
             JPanel fullPanel = new JPanel(new BorderLayout());
@@ -74,7 +84,9 @@ public class MessengerListCellRenderer implements ListCellRenderer<Message> {
             panel.add(message, BorderLayout.CENTER);
         }
 
-        panel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        //panel.setBorder(BorderFactory.createCompoundBorder(new FilledRoundedBorder(back.darker(), 2, 30), BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+        panel.setBorder(new FilledRoundedBorder(back.darker(), 2, 20));
+        panel.setPreferredSize(panel.getPreferredSize());
         return panel;
     }
 }
